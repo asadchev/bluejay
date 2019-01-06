@@ -29,6 +29,9 @@ include_directories(${PYTHON_INCLUDE_PATH})
 include(external/pybind11.cmake)
 include_directories(${CMAKE_BINARY_DIR}/pybind11/include)
 
+include(external/eigen.cmake)
+include_directories(${CMAKE_BINARY_DIR}/eigen/include)
+
 include(external/rapidjson.cmake)
 include_directories(${CMAKE_BINARY_DIR}/rapidjson/include)
 
