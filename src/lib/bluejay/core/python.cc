@@ -11,4 +11,5 @@ namespace eigen {
 
 PYBIND11_EMBEDDED_MODULE(bluejay_core, m) {
   std::cout << "Initializing bluejay_core" << std::endl;
+  bluejay::eigen::init(m);
 }
