@@ -37,5 +37,7 @@ message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
 
 include(external/ga.cmake)
 
+include(external/libint.cmake)
+
 enable_testing()
 add_subdirectory(src)
