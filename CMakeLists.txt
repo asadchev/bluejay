@@ -35,5 +35,7 @@ message(STATUS "Found BLAS: ${BLAS_LIBRARIES}")
 find_package(LAPACK REQUIRED)
 message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
 
+include(external/ga.cmake)
+
 enable_testing()
 add_subdirectory(src)
