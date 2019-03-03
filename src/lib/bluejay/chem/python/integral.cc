@@ -1,8 +1,10 @@
 #include "bluejay/chem/integral/engine.h"
-
+#include "bluejay/chem/integral/transform.h"
 #include "bluejay/core/pybind11.h"
+
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
+
 
 namespace bluejay {
 namespace integral {
@@ -61,6 +63,17 @@ namespace integral {
     return py::array(shape, result);
   }
 
+
+  template<class ... Args>
+  std::unique_ptr< transform::IndexTransform<4> > make_index_transform(
+    std::shared_ptr<Array> T,
+    std::array<size_t,4> order,
+    Args ... args)
+  {
+    //std::shared_ptr<Array> ptr = py::cast< std::shared_ptr<Array> >(T);
+    return std::make_unique< transform::IndexTransform<4> >(T, order, args...);
+  }
+
   void init(py::module m) {
 
     auto integral_engine = py::class_<IntegralEngine, PyIntegralEngine, std::shared_ptr<IntegralEngine> >(m, "IntegralEngine")
@@ -89,6 +102,30 @@ namespace integral {
       .def("compute", &two_body_integral_compute)
       ;
 
+
+    using transform::IndexTransform;
+    using transform::Transform1;
+    using transform::Transform2;
+
+    py::class_< IndexTransform<4> >(m, "IndexTransform")
+      .def(
+        py::init(&make_index_transform<Transform2, Transform1, Transform1>),
+        py::arg("T"), py::arg("order"),
+        py::arg("T12"),
+        py::arg("T3") = py::none(),
+        py::arg("T4") = py::none()
+      )
+      .def(
+        py::init(&make_index_transform<Transform1, Transform1, Transform1, Transform1>),
+        py::arg("T"), py::arg("order"),
+        py::arg("T1") = py::none(),
+        py::arg("T2") = py::none(),
+        py::arg("T3") = py::none(),
+        py::arg("T4") = py::none()
+      )
+      ;
+
+    m.def("transform", &transform::transform);
 
   }
 

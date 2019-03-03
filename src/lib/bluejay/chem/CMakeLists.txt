@@ -1,6 +1,7 @@
 add_library(libbluejay-chem SHARED
   atom.cc basis.cc molecule.cc
   python.cc python/molecule.cc python/basis.cc
+  integral/transform/transform.cc # integral/transform/expression.cc
   python/integral.cc
   )
 
@@ -20,3 +21,4 @@ add_custom_target(
 add_dependencies(libbluejay-chem bluejay-chem-basis)
 
 add_test(NAME basis COMMAND bluejay test/basis.py)
+add_test(NAME transform COMMAND bluejay test/transform.py)
