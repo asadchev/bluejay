@@ -1,4 +1,5 @@
 #include "bluejay/chem/integral/engine.h"
+#include "bluejay/chem/integral/transform.h"
 
 #include "bluejay/core/pybind11.h"
 #include <pybind11/stl.h>
@@ -73,6 +74,31 @@ namespace integral {
       .def("compute", &IntegralEngine::TwoBodyEngine::compute)
       ;
 
+    py::class_<IntegralTransform>(m, "IntegralTransform")
+      .def(
+        py::init< const Molecule::Basis&,std::shared_ptr<IntegralEngine> >()
+      )
+      .def_property_readonly("basis", &IntegralTransform::basis)
+      //.def("compute", &transform_compute)
+      //.def("compute_pq", &IntegralTransform::compute_pq)
+      .def(
+        "transform_pq",
+        [](IntegralTransform &transform, const Matrix<double> &C1, const Matrix<double> &C2) {
+          return transform.transform_pq(C1, C2);
+        }
+      )
+      .def(
+        "transform_pq",
+        [](IntegralTransform &transform, const Tensor4<double> &T12) {
+          return transform.transform_pq(T12);
+        }
+      )
+      ;
+
+    m.def(
+      "transform",
+      transform::transform
+    );
 
   }
 
