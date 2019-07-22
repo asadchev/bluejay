@@ -1,5 +1,6 @@
 __all__ = [
     "transform",
+    "expression",
 ]
 
 from bluejay_chem.integral import IntegralEngine
