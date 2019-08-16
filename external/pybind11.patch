@@ -1,0 +1,62 @@
+--- include/pybind11/cast.h~	2018-09-11 04:12:10.000000000 -0400
++++ include/pybind11/cast.h	2019-01-05 18:55:04.195874404 -0500
+@@ -1453,7 +1453,36 @@
+ 
+ /// Specialize for the common std::shared_ptr, so users don't need to
+ template <typename T>
+-class type_caster<std::shared_ptr<T>> : public copyable_holder_caster<T, std::shared_ptr<T>> { };
++class type_caster<std::shared_ptr<T>>
++{
++    PYBIND11_TYPE_CASTER (std::shared_ptr<T>, _(PYBIND11_STRING_NAME));
++
++    using BaseCaster = copyable_holder_caster<T, std::shared_ptr<T>>;
++
++    bool load (pybind11::handle src, bool b)
++    {
++        BaseCaster bc;
++        bool success = bc.load (src, b);
++        if (!success)
++        {
++            return false;
++        }
++
++        auto py_obj = reinterpret_borrow<object> (src);
++        auto base_ptr = static_cast<std::shared_ptr<T>> (bc);
++        auto py_obj_ptr = std::make_shared<object> (py_obj);
++
++        value = std::shared_ptr<T> (py_obj_ptr, base_ptr.get ());
++        return true;
++    }
++
++    static handle cast (std::shared_ptr<T> sp,
++                        return_value_policy rvp,
++                        handle h)
++    {
++        return BaseCaster::cast (sp, rvp, h);
++    }
++};
+ 
+ template <typename type, typename holder_type>
+ struct move_only_holder_caster {
+@@ -1495,6 +1524,9 @@
+ template <typename base, typename deleter> struct is_holder_type<base, std::unique_ptr<base, deleter>> :
+     std::true_type {};
+ 
++template <typename T>
++struct is_holder_type<T, std::shared_ptr<T>> : std::true_type {};
++
+ template <typename T> struct handle_type_name { static PYBIND11_DESCR name() { return _<T>(); } };
+ template <> struct handle_type_name<bytes> { static PYBIND11_DESCR name() { return _(PYBIND11_BYTES_NAME); } };
+ template <> struct handle_type_name<args> { static PYBIND11_DESCR name() { return _("*args"); } };
+--- include/pybind11/pytypes.h~	2018-09-11 04:12:10.000000000 -0400
++++ include/pybind11/pytypes.h	2019-01-09 13:52:06.183596182 -0500
+@@ -311,7 +311,8 @@
+     /// the given tuple.
+     bool matches(handle ex) const { return PyErr_GivenExceptionMatches(ex.ptr(), type.ptr()); }
+ 
+-private:
++// need access to exception value
++//private:
+     object type, value, trace;
+ };
+ 
