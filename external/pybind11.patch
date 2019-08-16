@@ -1,0 +1,98 @@
+--- include/pybind11/cast.h~	2019-08-30 15:05:46.719644562 -0400
++++ include/pybind11/cast.h	2019-08-30 15:07:56.178894862 -0400
+@@ -32,6 +32,10 @@
+ #endif
+ 
+ NAMESPACE_BEGIN(PYBIND11_NAMESPACE)
++
++class gil_scoped_acquire;
++class gil_scoped_release;
++
+ NAMESPACE_BEGIN(detail)
+ 
+ /// A life support system for temporary objects created by `type_caster::load()`.
+@@ -1453,7 +1457,47 @@
+ 
+ /// Specialize for the common std::shared_ptr, so users don't need to
+ template <typename T>
+-class type_caster<std::shared_ptr<T>> : public copyable_holder_caster<T, std::shared_ptr<T>> { };
++class type_caster<std::shared_ptr<T>>
++{
++    PYBIND11_TYPE_CASTER (std::shared_ptr<T>, _(PYBIND11_STRING_NAME));
++
++    using BaseCaster = copyable_holder_caster<T, std::shared_ptr<T>>;
++
++    bool load (pybind11::handle src, bool b)
++    {
++        BaseCaster bc;
++        bool success = bc.load (src, b);
++        if (!success)
++        {
++            return false;
++        }
++
++	auto base_ptr = static_cast<std::shared_ptr<T>> (bc);
++	auto h = BaseCaster::cast(base_ptr, return_value_policy(), handle());
++	auto py_obj = reinterpret_borrow<object>(h);
++
++        auto py_obj_ptr = std::shared_ptr<object>{
++            new object{py_obj},
++            [](auto py_object_ptr) {
++                // It's possible that when the shared_ptr dies we won't have the
++                // gil (if the last holder is in a non-Python thread), so we
++                // make sure to acquire it in the deleter.
++                gil_scoped_acquire gil;
++                delete py_object_ptr;
++           }
++        };
++
++        value = std::shared_ptr<T> (py_obj_ptr, base_ptr.get ());
++        return true;
++    }
++
++    static handle cast (std::shared_ptr<T> sp,
++                        return_value_policy rvp,
++                        handle h)
++    {
++        return BaseCaster::cast (sp, rvp, h);
++    }
++};
+ 
+ template <typename type, typename holder_type>
+ struct move_only_holder_caster {
+@@ -1495,6 +1539,9 @@
+ template <typename base, typename deleter> struct is_holder_type<base, std::unique_ptr<base, deleter>> :
+     std::true_type {};
+ 
++template <typename T>
++struct is_holder_type<T, std::shared_ptr<T>> : std::true_type {};
++
+ template <typename T> struct handle_type_name { static PYBIND11_DESCR name() { return _<T>(); } };
+ template <> struct handle_type_name<bytes> { static PYBIND11_DESCR name() { return _(PYBIND11_BYTES_NAME); } };
+ template <> struct handle_type_name<args> { static PYBIND11_DESCR name() { return _("*args"); } };
+--- include/pybind11/pybind11.h~	2019-08-30 15:05:38.486352144 -0400
++++ include/pybind11/pybind11.h	2019-08-30 15:07:11.783170361 -0400
+@@ -196,7 +196,7 @@
+             if (a.descr)
+                 a.descr = strdup(a.descr);
+             else if (a.value)
+-                a.descr = strdup(a.value.attr("__repr__")().cast<std::string>().c_str());
++                a.descr = strdup(repr(a.value).cast<std::string>().c_str());
+         }
+ 
+         rec->is_constructor = !strcmp(rec->name, "__init__") || !strcmp(rec->name, "__setstate__");
+--- include/pybind11/pytypes.h~	2019-08-30 15:29:58.405375430 -0400
++++ include/pybind11/pytypes.h	2019-08-30 15:30:06.902210971 -0400
+@@ -311,8 +311,11 @@
+     /// the given tuple.
+     bool matches(handle ex) const { return PyErr_GivenExceptionMatches(ex.ptr(), type.ptr()); }
+ 
++public:
++    object value;
++
+ private:
+-    object type, value, trace;
++    object type, trace;
+ };
+ 
+ /** \defgroup python_builtins _
