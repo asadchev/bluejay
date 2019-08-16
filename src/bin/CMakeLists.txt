@@ -5,6 +5,7 @@ target_link_libraries(
   -Wl,--no-as-needed
   libbluejay-core
   libbluejay-ga
+  libbluejay-chem
   -Wl,--as-needed
   ${MPI_C_LIBRARIES}
   )
