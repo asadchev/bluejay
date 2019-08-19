@@ -26,5 +26,14 @@ class BasisTest(unittest.TestCase):
     for e,shells in b:
       print (e, shells)
 
+  def test_basis_set_nwchem_parser(self):
+    import bluejay.chem.basis.nwchem
+    path = os.path.dirname(__file__)
+    path = os.path.join(path, "3-21G.nw")
+    b = basis.read(path)
+    #print b
+    # for e,shells in b:
+    #   print e, shells
+
 if __name__ == '__main__':
   unittest.main(verbosity=2)
