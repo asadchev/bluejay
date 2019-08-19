@@ -51,3 +51,11 @@ def ethanol(basis):
     ("H", (-1.2737541560, -0.7748626513, -0.9540587845)),
   ]
   return molecule(geom, basis)
+
+def heron(basis):
+  geom = read_pubchem("file:///" + test_dir() + '5462328.json')
+  return molecule(geom, basis)
+
+def ketamine(basis):
+  geom = read_pubchem("file:///" + test_dir() + '3821.json')
+  return molecule(geom, basis)
