@@ -31,3 +31,9 @@ include_directories(${CMAKE_BINARY_DIR}/pybind11/include)
 
 include(external/rapidjson.cmake)
 include_directories(${CMAKE_BINARY_DIR}/rapidjson/include)
+
+find_package(MPI REQUIRED)
+message(STATUS "Found MPI: ${MPI_C_LIBRARIES}")
+
+enable_testing()
+add_subdirectory(src)
