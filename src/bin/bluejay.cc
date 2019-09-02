@@ -1,4 +1,5 @@
 #include "bluejay/core/forward.h"
+#include "bluejay/ga/forward.h"
 
 #define OMPI_SKIP_MPICXX
 #include <mpi/mpi.h>
@@ -8,6 +9,7 @@
 int main(int argc, char *argv[]) {
   MPI_Init(0, NULL);
   bluejay::initialize(argc, argv);
+  bluejay::ga::initialize();
   int code = 0;
   try {
     if (argc == 1) {
@@ -27,6 +29,7 @@ int main(int argc, char *argv[]) {
     code = e.code;
   }
   bluejay::finalize();
+  bluejay::ga::finalize();
   MPI_Finalize();
   return code;
 }
