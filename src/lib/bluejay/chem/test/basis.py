@@ -8,6 +8,13 @@ class BasisTest(unittest.TestCase):
   def setUp(self): pass
 
   def test_basis_set(self):
+    path = os.path.dirname(__file__)
+
+    b = BasisSet("STO-3G")
+    b = basis.read(os.path.join(path, "..", "basis", "STO-3G.json"))
+
+    b = BasisSet("6-31+G*") # , path=os.path.join(path, "../basis/"))
+    b = basis.read(os.path.join(path, "..", "basis", "6-31+G*.json"))
 
     b = dict()
     b["H"] = [
