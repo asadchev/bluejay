@@ -1,6 +1,7 @@
 add_library(libbluejay-chem SHARED
   atom.cc basis.cc molecule.cc
   python.cc python/molecule.cc python/basis.cc
+  python/integral.cc
   )
 
 include_directories(${PROJECT_BINARY_DIR}/libint/include)
