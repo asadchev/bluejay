@@ -35,5 +35,11 @@ include_directories(${CMAKE_BINARY_DIR}/rapidjson/include)
 find_package(MPI REQUIRED)
 message(STATUS "Found MPI: ${MPI_C_LIBRARIES}")
 
+find_package(BLAS REQUIRED)
+message(STATUS "Found BLAS: ${BLAS_LIBRARIES}")
+
+find_package(LAPACK REQUIRED)
+message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
+
 enable_testing()
 add_subdirectory(src)
