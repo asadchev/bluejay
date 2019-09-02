@@ -7,5 +7,9 @@ __all__ = [
 
 _default_integral_engine = None
 
-def integral_engine(kmax=10):
+def integral_engine(basis):
+  if not _default_integral_engine:
+    import bluejay.libint2 as libint
+    libint.initialize()
+    return libint.integral_engine()
   return _default_integral_engine
